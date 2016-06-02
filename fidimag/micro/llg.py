@@ -36,7 +36,6 @@ class LLG(object):
         self.spin_last = np.ones(3 * self.n, dtype=np.float)
         self._pins = np.zeros(self.n, dtype=np.int32)
         self.field = np.zeros(3 * self.n, dtype=np.float)
-        self.dm_dt = np.zeros(3 * self.n, dtype=np.float)
         self._skx_number = np.zeros(self.n, dtype=np.float)
         self.interactions = []
         self.integrator_tolerances_set = False
@@ -49,7 +48,7 @@ class LLG(object):
         elif integrator == "sundials":
             self.integrator = SundialsIntegrator(self.spin, self.sundials_rhs)
         elif integrator == "euler" or integrator == "rk4":
-            self.integrator = StepIntegrator(self.spin, self.step_rhs, integrator)
+            self.integrator = StepIntegrator(self.spin, self.rhs, integrator)
         else:
             raise NotImplemented("integrator must be sundials, euler or rk4")
 
@@ -252,9 +251,6 @@ class LLG(object):
                              self.n,
                              self.do_precession,
                              self.default_c)
-
-        #ydot[:] = self.dm_dt[:]
-
         return 0
 
     def sundials_jtimes(self, mp, Jmp, t, m, fy):
@@ -270,11 +266,20 @@ class LLG(object):
                                 self.default_c)
         return 0
 
-    def step_rhs(self, t, y):
-        self.spin[:] = y[:]
+    def rhs(self, t, m, dmdt):
+        """
+        Compute the right-hand side of the chosen equation of motion.
+
+        Parameters:
+            - `t` time
+            - `m` spins for which to compute the RHS
+            - `dmdt` output parameter for the derivative
+
+        """
         self.t = t
+        self.spin[:] = m[:]
         self.compute_effective_field(t)
-        clib.compute_llg_rhs(self.dm_dt,
+        clib.compute_llg_rhs(dmdt,
                              self.spin,
                              self.field,
                              self.alpha,
@@ -283,7 +288,7 @@ class LLG(object):
                              self.n,
                              self.do_precession,
                              self.default_c)
-        return self.dm_dt
+        return 0
 
     def compute_average(self):
         self.spin.shape = (-1, 3)

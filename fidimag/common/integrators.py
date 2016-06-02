@@ -2,6 +2,7 @@
 Implement the time integrators used in the simulation of magnetisation dynamics.
 
 """
+import numpy as np
 from scipy.integrate import ode
 from fidimag.extensions.cvode import CvodeSolver as SundialsIntegrator
 
@@ -11,6 +12,7 @@ EPSILON = 1e-16
 class BaseIntegrator(object):
     def __init__(self, spins, rhs_fun):
         self.y = spins
+        self.ydot = np.zeros(spins.shape)
         self.t = 0
         self.rhs = rhs_fun
         self.rhs_evals_nb = 0
@@ -25,6 +27,33 @@ class BaseIntegrator(object):
         return self.rhs_evals_nb
 
 
+class ScikitsSundialsIntegrator(object):
+    def __init__(self, spins, rhs_fun):
+        super(ScikitsSundialsIntegrator, self).__init__(spins, rhs_fun)
+
+        # wrapping RHS function to count evals, until we find a way
+        # to access the stats or patch upstream (to bmcage/odes)
+        def rhs_wrap(t, y, ydot):
+            self.rhs_evals_nb += 1
+            rhs_fun(t, y, ydot)
+        self.rhs = rhs_wrap
+
+        from scikits.odes import ode
+        self.solver = ode('cvode', self.rhs, old_api=False,
+                                             max_steps=1e6,
+                                             rtol=1e-8,
+                                             atol=1e-8,
+                                             order=2,
+                                             maxl=300)
+        # TODO: make options accessible, add preconditioner/jacobian
+
+    def run_until(self, t):
+        self.solver.step(t, y_retn=self.y)
+
+    def set_initial_value(self, spins, t):
+        self.solver.init_step(t, spins)
+
+
 class StepIntegrator(BaseIntegrator):
     def __init__(self, spins, rhs_fun, step="euler", stepsize=1e-15):
         super(StepIntegrator, self).__init__(spins, rhs_fun)
@@ -36,7 +65,7 @@ class StepIntegrator(BaseIntegrator):
 
     def run_until(self, t):
         while abs(self.t - t) > EPSILON:
-            self.t, self.y, evals = self.step(self.t, self.y, self.stepsize, self.rhs)
+            self.t, self.y, evals = self.step(self.t, self.y, self.ydot, self.stepsize, self.rhs)
             self.rhs_evals_nb += evals
             if self.t > t:
                 break
@@ -51,7 +80,8 @@ class ScipyIntegrator(BaseIntegrator):
 
         def rhs_wrap(y, t):
             self.rhs_evals_nb += 1
-            return rhs_fun(y, t)
+            rhs_fun(t, y, self.ydot)
+            return self.ydot
         self.rhs = rhs_wrap  # overwriting rhs to count evals
 
     def solout(self, t, y):
@@ -81,7 +111,7 @@ class ScipyIntegrator(BaseIntegrator):
         return 0
 
 
-def euler_step(t, y, h, f):
+def euler_step(t, y, ydot, h, f):
     """
     Numerical integration using the Euler method.
 
@@ -90,12 +120,13 @@ def euler_step(t, y, h, f):
 
     """
     tp = t + h
-    yp = y + h * f(t, y)
+    f(t, y, ydot)
+    yp = y + h * ydot
     evals = 1
     return tp, yp, evals
 
 
-def runge_kutta_step(t, y, h, f):
+def runge_kutta_step(t, y, ydot, h, f):
     """
     Numerical integration using the classical Runge-Kutta method (RK4).
 
@@ -108,12 +139,20 @@ def runge_kutta_step(t, y, h, f):
         k_4 = f(t_n + h,   y_n + h   * k_3).
 
     """
-    k1 = f(t,           y)
-    k2 = f(t + h / 2.0, y + h * k1 / 2.0)
-    k3 = f(t + h / 2.0, y + h * k2 / 2.0)
-    k4 = f(t + h,       y + h * k3)
+    yp = y.copy()
+
+    f(t, y, ydot)  # ydot = k1
+    yp += h / 6.0 * ydot
+
+    f(t + h / 2.0, y + h * ydot / 2.0, ydot)  # ydot = k2
+    yp += h / 3.0 * ydot
+
+    f(t + h / 2.0, y + h * ydot / 2.0, ydot)  # ydot = k3
+    yp += h / 3.0 * ydot 
+
+    f(t + h, y + h * ydot, ydot)  # ydot = k4
+    yp += h / 6.0 * ydot
 
     tp = t + h
-    yp = y + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6.0
     evals = 4
     return tp, yp, evals

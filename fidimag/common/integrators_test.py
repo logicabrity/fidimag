@@ -26,9 +26,10 @@ def test_step(integrator, stepsize, debug=False):
     ys = np.zeros(ts.shape[0])
 
     ys[0] = y_true(ts[0])  # known initial value
+    ydot = np.zeros(ys[0].shape)  # scratch space for derivative
     
     for i, t in enumerate(ts[:-1]):
-        tp, yp, evals = integrator(t, ys[i], stepsize, f)
+        tp, yp, evals = integrator(t, ys[i], ydot, stepsize, f)
         ts[i+1] = tp
         ys[i+1] = yp
     if not debug:
