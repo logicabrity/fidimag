@@ -127,7 +127,6 @@ ext_modules = [
               libraries=com_libs,
               extra_compile_args=com_args,
               extra_link_args=com_link,
->>>>>>> origin/master
               ),
     Extension("fidimag.extensions.cvode",
               sources=cvode_sources,
