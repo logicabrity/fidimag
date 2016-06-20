@@ -21,7 +21,7 @@ before_install:
 addons:
   apt:
     packages:
-    - libgsl-dev
+    - libgsl0-dev
     # - gsl-bin libgsl0-dev
     #  - libgsl0-dev
 install:
