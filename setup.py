@@ -77,7 +77,7 @@ dipolar_sources.append(os.path.join(DEMAG_DIR, 'dipolar.pyx'))
 dipolar_sources += glob_cfiles(DEMAG_DIR, excludes=["dipolar.c"])
 
 com_libs = ['m', 'fftw3_omp', 'fftw3', 'sundials_cvodes',
-            'sundials_nvecserial', 'gsl']
+            'sundials_nvecserial', 'gsl', 'gslcblas']
 
 com_args = ['-std=c99']
 com_link = ['-L%s' % LIB_DIR]

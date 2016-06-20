@@ -19,9 +19,10 @@ before_install:
 
 addons:
   apt:
-    sources:
-      - gsl-bin libgsl0-dev
-      - libgsl0-dev
+    packages:
+    - libgsl-dev
+    # - gsl-bin libgsl0-dev
+    #  - libgsl0-dev
 install:
   - conda create -q -y -n fidimag-test python=$TRAVIS_PYTHON_VERSION cython matplotlib pytest scipy pytest-cov
   - source activate fidimag-test
