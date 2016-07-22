@@ -1,47 +1,23 @@
 How to install
 ===============
 
-Install prerequisites
----------------------
 
-On Ubuntu systems, we need to run the following commands::
+Install on Ubuntu
+-----------------
 
-  # required to compile fidimag
-  apt-get install cython python-numpy
-  # required for tests and running it
-  apt-get install python-pytest python-pyvtk ipython python-matplotlib
+To install on Ubuntu systems, navigate to `fidimag/doc` and run the script, `ubuntu_install_script.sh`, by running the following command::
 
-These are available in the script `bin/install-ubuntu-packages.sh` for convenience.
+  sudo bash ubuntu_install_script.sh
 
+This script:
 
-Install external libraries (FFTW and Sundials)
-----------------------------------------------
+1. Installs the prerequisite packages which Fidimag depends on, by running `install-ubuntu-packages.sh`
+2. Installs the external FFTW library, by running `install-fftw.sh`
+3. Installs external Sundials library, by running `install-sundials-2.5.sh`
+4. Installs Cython
+5. Builds Fidimag, from the Makefile located in the directory, `fidimag`
+6. Exports the python path to the .bashrc file.
 
-Run the install.sh by using ::
-
-   bash install.sh
-
-in the fidimag/bin folder.
-
-Install fidimag
----------------------------------------
-
-In the fidimag folder type ::
-
-   make
-
-to build fidimag.
-
-Add the fidimag to python path
----------------------------------------
-
-Add the following to your .bashrc file::
-
-   export PYTHONPATH=/path/to/fidimag:$PYTHONPATH
-
-for example, suppose fidimag is in the directory of ~/work, then::
-
-   export PYTHONPATH=~/work/fidimag:$PYTHONPATH
 
 Add the library path to LD_LIBRARY_PATH
 ---------------------------------------
