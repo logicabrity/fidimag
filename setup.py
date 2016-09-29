@@ -22,7 +22,8 @@ ATOM_DIR = os.path.join(SRC_DIR, "atomistic", "lib")
 MICRO_DIR = os.path.join(SRC_DIR, "micro", "lib")
 BARYAKHTAR_DIR = os.path.join(MICRO_DIR, "baryakhtar")
 DEMAG_DIR = os.path.join(SRC_DIR, "common", "dipolar")
-
+MKL_DIR = '/opt/intel/compilers_and_libraries_2016.1.111/mac/mkl/interfaces/fftw3xc/libfftw3xc_intel.a'
+MKL_INCL = '/opt/intel/compilers_and_libraries_2016.1.111/mac/mkl/include/fftw/'
 LOCAL_DIR = os.path.join(MODULE_DIR, "local")
 INCLUDE_DIR = os.path.join(LOCAL_DIR, "include")
 LIB_DIR = os.path.join(LOCAL_DIR, "lib")
@@ -78,92 +79,101 @@ dipolar_sources.append(os.path.join(DEMAG_DIR, 'dipolar.pyx'))
 dipolar_sources += glob_cfiles(DEMAG_DIR, excludes=["dipolar.c"])
 
 
-com_libs = ['m', 'fftw3_omp', 'fftw3', 'sundials_cvodes',
+com_libs = ['m', 'sundials_cvodes',
             'sundials_nvecserial', 'sundials_nvecopenmp', 'blas', 'lapack']
 
 com_args = ['-std=c99']
-com_link = ['-L%s' % LIB_DIR]
+com_link = [
+    LIB_DIR]
 
 if 'icc' in os.environ['CC']:
-    com_args.append('-openmp')
-    com_link.append('-openmp')
+    com_args.append('-qopenmp')
 else:
     com_args.append('-fopenmp')
-    com_link.append('-fopenmp')
 
 
-com_inc = [numpy.get_include(), INCLUDE_DIR]
+com_inc = [numpy.get_include(), INCLUDE_DIR, MKL_INCL]
 
 ext_modules = [
     Extension("fidimag.extensions.clib",
               sources=sources,
+              library_dirs=com_link,
               include_dirs=com_inc,
               libraries=com_libs,
               extra_compile_args=com_args,
-              extra_link_args=com_link,
+              extra_link_args=[MKL_DIR]
               ),
     Extension("fidimag.extensions.cvode",
               sources=cvode_sources,
+              library_dirs=com_link,
               include_dirs=com_inc,
               libraries=com_libs,
               extra_compile_args=com_args,
-              extra_link_args=com_link,
+              extra_link_args=[MKL_DIR]
               ),
     Extension("fidimag.extensions.baryakhtar_clib",
               sources=baryakhtar_sources,
+              library_dirs=com_link,
               include_dirs=com_inc,
               libraries=com_libs,
               extra_compile_args=com_args,
-              extra_link_args=com_link,
+              extra_link_args=[MKL_DIR]
               ),
     Extension("fidimag.extensions.micro_clib",
               sources=micro_sources,
+              library_dirs=com_link,
               include_dirs=com_inc,
               libraries=com_libs,
               extra_compile_args=com_args,
-              extra_link_args=com_link,
+              extra_link_args=[MKL_DIR]
               ),
     Extension("fidimag.extensions.neb_clib",
               sources=neb_sources,
+              library_dirs=com_link,
               include_dirs=com_inc,
               libraries=com_libs,
               extra_compile_args=com_args,
-              extra_link_args=com_link,
+              extra_link_args=[MKL_DIR]
               ),
     Extension("fidimag.extensions.cvode",
               sources=cvode_sources,
+              library_dirs=com_link,
               include_dirs=com_inc,
               libraries=com_libs,
               extra_compile_args=com_args,
-              extra_link_args=com_link,
+              extra_link_args=[MKL_DIR]
               ),
     Extension("fidimag.extensions.baryakhtar_clib",
               sources=baryakhtar_sources,
+              library_dirs=com_link,
               include_dirs=com_inc,
               libraries=com_libs,
               extra_compile_args=com_args,
-              extra_link_args=com_link,
+              extra_link_args=[MKL_DIR]
               ),
     Extension("fidimag.extensions.micro_clib",
               sources=micro_sources,
+              library_dirs=com_link,
               include_dirs=com_inc,
               libraries=com_libs,
               extra_compile_args=com_args,
-              extra_link_args=com_link,
+              extra_link_args=[MKL_DIR]
               ),
     Extension("fidimag.extensions.neb_clib",
               sources=neb_sources,
+              library_dirs=com_link,
               include_dirs=com_inc,
               libraries=com_libs,
               extra_compile_args=com_args,
-              extra_link_args=com_link,
+              extra_link_args=[MKL_DIR]
               ),
     Extension("fidimag.extensions.dipolar",
               sources=dipolar_sources,
+              library_dirs=com_link,
               include_dirs=com_inc,
               libraries=com_libs,
               extra_compile_args=com_args,
-              extra_link_args=com_link,
+              extra_link_args=[MKL_DIR]
               ),
 ]
 
