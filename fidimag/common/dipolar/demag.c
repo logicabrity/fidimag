@@ -80,7 +80,7 @@ void compute_dipolar_tensors(fft_demag_plan *plan) {
 //compute the demag tensors, i.e, H=-N.M
 void compute_demag_tensors(fft_demag_plan *plan) {
   
-  int i, j, k, id;
+  int i, j, k, id, id2;
   double x, y, z;
   
   int nx = plan->nx;
@@ -98,9 +98,9 @@ void compute_demag_tensors(fft_demag_plan *plan) {
   double length = pow(dx*dy*dz, 1/3.0);
   double asymptotic_radius_sq = pow(26.0*length,2.0);
   
-  for (k = 0; k < lenz; k++) {
-    for (j = 0; j < leny; j++) {
-      for (i = 0; i < lenx; i++) {
+  for (k = 0; k < lenz/2 + 1; k++) {
+    for (j = 0; j < leny/2 + 1; j++) {
+      for (i = 0; i < lenx/2 + 1; i++) {
 	id = k * lenxy + j * lenx + i;
 	
 	x = (i - nx + 1) * dx;
@@ -129,6 +129,52 @@ void compute_demag_tensors(fft_demag_plan *plan) {
       }
     }
   }
+
+for (k = 0; k < lenz; k++) {
+    for (j = 0; j < leny; j++) {
+      for (i = 0; i < lenx/2 + 1; i++) {
+        id = k * lenxy + j * lenx + i;
+        id2 = k * lenxy + j * lenx + (lenx - i);
+        plan->tensor_xx[id2] = plan->tensor_xx[id];
+        plan->tensor_yy[id2] = plan->tensor_yy[id];
+        plan->tensor_zz[id2] = plan->tensor_zz[id];
+        plan->tensor_xy[id2] = plan->tensor_xy[id];
+        plan->tensor_xz[id2] = plan->tensor_xz[id];
+        plan->tensor_yz[id2] = plan->tensor_yz[id];
+    }
+}
+}
+
+for (k = 0; k < lenz; k++) {
+    for (j = 0; j < leny/2 + 1; j++) {
+      for (i = 0; i < lenx; i++) {
+        id = k * lenxy + j * lenx + i;
+        id2 = k * lenxy + (leny - j) * lenx + i;
+        plan->tensor_xx[id2] = plan->tensor_xx[id];
+        plan->tensor_yy[id2] = plan->tensor_yy[id];
+        plan->tensor_zz[id2] = plan->tensor_zz[id];
+        plan->tensor_xy[id2] = plan->tensor_xy[id];
+        plan->tensor_xz[id2] = plan->tensor_xz[id];
+        plan->tensor_yz[id2] = plan->tensor_yz[id];
+    }
+}
+}
+
+for (k = 0; k < lenz; k++) {
+    for (j = 0; j < leny; j++) {
+      for (i = 0; i < lenx/2 + 1; i++) {
+        id = k * lenxy + j * lenx + i;
+        id2 = (lenz - k) * lenxy + j * lenx + i;
+        plan->tensor_xx[id2] = plan->tensor_xx[id];
+        plan->tensor_yy[id2] = plan->tensor_yy[id];
+        plan->tensor_zz[id2] = plan->tensor_zz[id];
+        plan->tensor_xy[id2] = plan->tensor_xy[id];
+        plan->tensor_xz[id2] = plan->tensor_xz[id];
+        plan->tensor_yz[id2] = plan->tensor_yz[id];
+    }
+}
+}
+
 }
 
 
