@@ -313,7 +313,7 @@ cdef class rng_mt19937(object):
         """
         return random_double_half_open(self._c_state)
     
-    def fill_vector_gaussian(self, np.ndarray[np.float64_t, ndim=1] vector):
+    def fill_vector_gaussian(self, np.float64_t [:] vector):
         gauss_random_vector(self._c_state, &vector[0], vector.shape[0])
 
     def fill_vector_uniform_sphere(self, double [:] spin, n):

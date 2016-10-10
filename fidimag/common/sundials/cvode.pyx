@@ -18,26 +18,26 @@ cdef struct cv_userdata:
     void * jv  # the value of Jacobian times v
 
 
-cdef inline copy_arr2nv(np.ndarray[realtype, ndim=1, mode='c'] np_x, N_Vector v):
+cdef inline copy_arr2nv(realtype [:] np_x, N_Vector v):
     cdef long int n = (< N_VectorContent_Serial > v.content).length
     cdef void * data_ptr = <void * >np_x.data
     memcpy((< N_VectorContent_Serial > v.content).data, data_ptr, n*sizeof(double))
     return 0
 
-cdef inline copy_arr2nv_openmp(np.ndarray[realtype, ndim=1, mode='c'] np_x, N_Vector v):
+cdef inline copy_arr2nv_openmp(realtype [:] np_x, N_Vector v):
     cdef long int n = (< N_VectorContent_OpenMP > v.content).length
     cdef void * data_ptr = <void * >np_x.data
     memcpy((< N_VectorContent_OpenMP > v.content).data, data_ptr, n*sizeof(double))
     return 0
 
 
-cdef inline copy_nv2arr(N_Vector v, np.ndarray[realtype, ndim=1, mode='c'] np_x):
+cdef inline copy_nv2arr(N_Vector v, realtype [:] np_x):
     cdef long int n = (< N_VectorContent_Serial > v.content).length
     cdef double * v_data = ( < N_VectorContent_Serial > v.content).data
     memcpy(np_x.data, v_data, n*sizeof(realtype))
     return 0
 
-cdef inline copy_nv2arr_openmp(N_Vector v, np.ndarray[realtype, ndim=1, mode='c'] np_x):
+cdef inline copy_nv2arr_openmp(N_Vector v, realtype [:] np_x):
     cdef long int n = (< N_VectorContent_OpenMP > v.content).length
     cdef double * v_data = ( < N_VectorContent_OpenMP > v.content).data
     memcpy(np_x.data, v_data, n*sizeof(realtype))
