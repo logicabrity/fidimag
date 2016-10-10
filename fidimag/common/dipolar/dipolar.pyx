@@ -54,30 +54,30 @@ cdef class FFTDemag(object):
             finalize_plan(self._c_plan)
             self._c_plan = NULL
 
-    def compute_tensors_2dpbc(self, np.ndarray[double, ndim=1, mode="c"] tensors, 
+    def compute_tensors_2dpbc(self, double [:] tensors, 
                             pbc_2d_error, sample_repeat_nx, sample_repeat_ny, dipolar_radius):
         compute_demag_tensors_2dpbc(self._c_plan, &tensors[0], pbc_2d_error, 
                             sample_repeat_nx, sample_repeat_ny, dipolar_radius)
     
-    def fill_demag_tensors(self, np.ndarray[double, ndim=1, mode="c"] tensors):
+    def fill_demag_tensors(self, double [:] tensors):
         fill_demag_tensors_c(self._c_plan, &tensors[0])
         create_fftw_plan(self._c_plan)
 
-    def compute_field(self,np.ndarray[double, ndim=1, mode="c"] spin,
-                        np.ndarray[double, ndim=1, mode="c"] mu_s,
-                        np.ndarray[double, ndim=1, mode="c"] field):
+    def compute_field(self,double [:] spin,
+                        double [:] mu_s,
+                        double [:] field):
         compute_fields(self._c_plan, &spin[0], &mu_s[0], &field[0])
 
     def compute_exact(self,
-                      np.ndarray[double, ndim=1, mode="c"] spin,
-                      np.ndarray[double, ndim=1, mode="c"] mu_s,
-                      np.ndarray[double, ndim=1, mode="c"] field):
+                      double [:] spin,
+                      double [:] mu_s,
+                      double [:] field):
         exact_compute(self._c_plan, &spin[0], &mu_s[0], &field[0])
         
     def compute_energy(self,
-                      np.ndarray[double, ndim=1, mode="c"] spin,
-                      np.ndarray[double, ndim=1, mode="c"] mu_s,
-                      np.ndarray[double, ndim=1, mode="c"] field):
+                      double [:] spin,
+                      double [:] mu_s,
+                      double [:] field):
         
         return compute_demag_energy(self._c_plan, &spin[0], &mu_s[0], &field[0])
 

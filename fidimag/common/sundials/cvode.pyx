@@ -182,11 +182,11 @@ cdef class CvodeSolver(object):
         self.set_initial_value(spins, self.t)
         self.set_options(rtol, atol)
 
-    def reset(self, np.ndarray[double, ndim=1, mode="c"] spin, t):
+    def reset(self, double [:] spin, t):
         copy_arr2nv(spin, self.u_y)
         CVodeReInit(self.cvode_mem, t, self.u_y)
 
-    def set_initial_value(self, np.ndarray[double, ndim=1, mode="c"] spin, t):
+    def set_initial_value(self, double [:] spin, t):
         self.t = t
         self.y[:] = spin[:]
 
@@ -366,11 +366,11 @@ cdef class CvodeSolver_OpenMP(object):
         self.set_initial_value(spins, self.t)
         self.set_options(rtol, atol)
 
-    def reset(self, np.ndarray[double, ndim=1, mode="c"] spin, t):
+    def reset(self, double [:] spin, t):
         copy_arr2nv_openmp(spin, self.u_y)
         CVodeReInit(self.cvode_mem, t, self.u_y)
 
-    def set_initial_value(self, np.ndarray[double, ndim=1, mode="c"] spin, t):
+    def set_initial_value(self, double [:] spin, t):
         self.t = t
         self.y[:] = spin[:]
 

@@ -9,18 +9,18 @@ cdef extern from "neb.h":
     void compute_dm_dt_c(double *ys, double *heff, double *dm_dt, int *pins, int image_num, int nodes) 
 
 
-def compute_tangents(np.ndarray[double, ndim=2, mode="c"] ys,
-                            np.ndarray[double, ndim=1, mode="c"] energy,
-                            np.ndarray[double, ndim=2, mode="c"] tangents,
+def compute_tangents(double [:, :] ys,
+                            double [:] energy,
+                            double [:, :] tangents,
                             total_image_num,
                             nodes):
 
     compute_tangents_c(&ys[0,0], &energy[0], &tangents[0,0], total_image_num, nodes)
 
-def compute_dm_dt(np.ndarray[double, ndim=2, mode="c"] ys,
-                            np.ndarray[double, ndim=2, mode="c"] heff,
-                            np.ndarray[double, ndim=2, mode="c"] dmdt,
-                            np.ndarray[int, ndim=1, mode="c"] pins,
+def compute_dm_dt(double [:, :] ys,
+                            double [:, :] heff,
+                            double [:, :] dmdt,
+                            int [:] pins,
                             total_image_num,
                             nodes):
 
