@@ -61,8 +61,8 @@ cdef copy_nv2nv_openmp(N_Vector v_dest, N_Vector v_src):
 
 cdef int cv_rhs(realtype t, N_Vector yv, N_Vector yvdot, void * user_data) except -1:
     cdef cv_userdata * ud = <cv_userdata * >user_data
-    cdef np.ndarray[realtype, ndim = 1, mode = 'c'] y_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.y
-    cdef np.ndarray ydot_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.dm_dt
+    cdef realtype [:] y_arr = <realtype [:] > ud.y
+    cdef np.ndarray ydot_arr = <realtype [:] > ud.dm_dt
 
     copy_nv2arr(yv, y_arr)
     (< object > ud.rhs_fun)(t, y_arr, ydot_arr)
@@ -71,8 +71,8 @@ cdef int cv_rhs(realtype t, N_Vector yv, N_Vector yvdot, void * user_data) excep
 
 cdef int cv_rhs_openmp(realtype t, N_Vector yv, N_Vector yvdot, void * user_data) except -1:
     cdef cv_userdata * ud = <cv_userdata * >user_data
-    cdef np.ndarray[realtype, ndim = 1, mode = 'c'] y_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.y
-    cdef np.ndarray ydot_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.dm_dt
+    cdef realtype [:] y_arr = <realtype [:] > ud.y
+    cdef np.ndarray ydot_arr = <realtype [:] > ud.dm_dt
 
     copy_nv2arr_openmp(yv, y_arr)
     (< object > ud.rhs_fun)(t, y_arr, ydot_arr)
@@ -82,10 +82,10 @@ cdef int cv_rhs_openmp(realtype t, N_Vector yv, N_Vector yvdot, void * user_data
 
 cdef int cv_jtimes(N_Vector v, N_Vector Jv, realtype t, N_Vector y, N_Vector fy, void * user_data, N_Vector tmp) except -1:
     cdef cv_userdata * ud = <cv_userdata * >user_data
-    cdef np.ndarray[realtype, ndim = 1, mode = 'c'] m_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.y
-    cdef np.ndarray[realtype, ndim = 1, mode = 'c'] mp_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.v
-    cdef np.ndarray[realtype, ndim = 1, mode = 'c'] ydot_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.dm_dt
-    cdef np.ndarray[realtype, ndim = 1, mode = 'c'] jv_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.jv
+    cdef realtype [:] m_arr = <realtype [:] > ud.y
+    cdef realtype [:] mp_arr = <realtype [:] > ud.v
+    cdef realtype [:] ydot_arr = <realtype [:] > ud.dm_dt
+    cdef realtype [:] jv_arr = <realtype [:] > ud.jv
 
     copy_nv2arr(y, m_arr)
     copy_nv2arr(v, mp_arr)
@@ -96,10 +96,10 @@ cdef int cv_jtimes(N_Vector v, N_Vector Jv, realtype t, N_Vector y, N_Vector fy,
 
 cdef int cv_jtimes_openmp(N_Vector v, N_Vector Jv, realtype t, N_Vector y, N_Vector fy, void * user_data, N_Vector tmp) except -1:
     cdef cv_userdata * ud = <cv_userdata * >user_data
-    cdef np.ndarray[realtype, ndim = 1, mode = 'c'] m_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.y
-    cdef np.ndarray[realtype, ndim = 1, mode = 'c'] mp_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.v
-    cdef np.ndarray[realtype, ndim = 1, mode = 'c'] ydot_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.dm_dt
-    cdef np.ndarray[realtype, ndim = 1, mode = 'c'] jv_arr = <np.ndarray[realtype, ndim = 1, mode = 'c'] > ud.jv
+    cdef realtype [:] m_arr = <realtype [:] > ud.y
+    cdef realtype [:] mp_arr = <realtype [:] > ud.v
+    cdef realtype [:] ydot_arr = <realtype [:] > ud.dm_dt
+    cdef realtype [:] jv_arr = <realtype [:] > ud.jv
 
     copy_nv2arr_openmp(y, m_arr)
     copy_nv2arr_openmp(v, mp_arr)
@@ -190,7 +190,7 @@ cdef class CvodeSolver(object):
         self.t = t
         self.y[:] = spin[:]
 
-        cdef np.ndarray[double, ndim = 1, mode = "c"] y = self.y
+        cdef double [:] y = self.y
         self.u_y = N_VMake_Serial(y.size, & y[0])
 
         if self.cvode_already_initialised:
@@ -374,7 +374,7 @@ cdef class CvodeSolver_OpenMP(object):
         self.t = t
         self.y[:] = spin[:]
 
-        cdef np.ndarray[double, ndim = 1, mode = "c"] y = self.y
+        cdef double [:] y = self.y
         self.u_y = N_VMake_OpenMP(y.size, &y[0], self.num_threads)
 
         if self.cvode_already_initialised:
