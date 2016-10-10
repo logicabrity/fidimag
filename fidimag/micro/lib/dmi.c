@@ -267,7 +267,6 @@ void dmi_field_interfacial(double *m, double *field, double *energy, double *Ms_
 
     /* Here we iterate through every mesh node */
 	for (int i = 0; i < n; i++) {
-        double sign;
         double DMIc;
 	    double fx = 0, fy = 0, fz = 0;
 	    int idnm = 0;     // Index for the magnetisation matrix
