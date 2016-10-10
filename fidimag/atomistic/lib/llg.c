@@ -87,7 +87,6 @@ void llg_rhs(double * dm_dt, double * m, double * h, double * alpha, int * pins,
     double coeff, mm, mh, c;
     double hpi, hpj, hpk;
 
-    #pragma omp parallel for private(i,j,k,coeff,mm, mh, c, hpi,hpj,hpk)
     for (int id = 0; id < n; id++) {
         // Indexes for the 3 components of the spin (magnetic moment)
         // at the i-th lattice (mesh) site  --> x, y, z
@@ -169,7 +168,6 @@ void llg_rhs(double * dm_dt, double * m, double * h, double * alpha, int * pins,
 void llg_rhs_jtimes(double *jtn, double *m, double *h, double *mp, double *hp, double *alpha, int *pins,
         double gamma, int n, int do_precession, double default_c) {
 
-    //#pragma omp parallel for private(i,j,k,coeff,mm, mh, c, hpi,hpj,hpk)
     for (int i = 0; i < n; i++) {
         int j = i + n;
         int k = j + n;

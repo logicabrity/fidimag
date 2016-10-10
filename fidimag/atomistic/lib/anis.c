@@ -14,7 +14,6 @@ void compute_anis(double *spin, double *field, double *energy,
      * Neighbouring sites are not relevant here
      *
      */
-    #pragma omp parallel for
 	for (int i = 0; i < n; i++) {
 
         double m_u = (spin[3 * i] * axis[3 * i] +

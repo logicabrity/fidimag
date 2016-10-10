@@ -88,7 +88,6 @@ void compute_exch_field_micro(double *m, double *field, double *energy,
     double az = 2 * A / (dz * dz);
 
     /* Here we iterate through every mesh node */
-	#pragma omp parallel for
 	for (int i = 0; i < n; i++) {
 	    double fx = 0, fy = 0, fz = 0;
 	    int idnm = 0;     // Index for the magnetisation matrix

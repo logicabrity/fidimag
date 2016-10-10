@@ -52,7 +52,6 @@ void demag_full(double *spin, double *field, double *energy, double *coords,
     double rij_n[3];
 
     /* we start iterating through every lattice site */
-	#pragma omp parallel for private(rij, rij_n)
 	for (int i = 0; i < n; i++) {
         double rij_mag;
         /* This is for the dot product of m and rij */

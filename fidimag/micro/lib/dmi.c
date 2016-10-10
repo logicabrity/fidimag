@@ -128,9 +128,8 @@ void dmi_field_bulk(double *m, double *field, double *energy, double *Ms_inv,
     double dxs[6] = {dx, dx, dy, dy, dz, dz};
 
     /* Here we iterate through every mesh node */
-	#pragma omp parallel for shared(dmivector, dxs)
 	for (int i = 0; i < n; i++) {
-        double DMIc;
+            double DMIc;
 	    double fx = 0, fy = 0, fz = 0;
 	    int idnm = 0;     // Index for the magnetisation matrix
 	    int idn = 6 * i; // index for the neighbours
@@ -267,7 +266,6 @@ void dmi_field_interfacial(double *m, double *field, double *energy, double *Ms_
     double dxs[4] = {dx, dx, dy, dy};
 
     /* Here we iterate through every mesh node */
-	#pragma omp parallel for shared(dmivector, dxs)
 	for (int i = 0; i < n; i++) {
         double sign;
         double DMIc;

@@ -9,7 +9,6 @@ void llg_rhs_dw_c(double *m, double *h, double *dm, double *T, double *alpha, do
         double k_B = 1.3806505e-23;
         double Q = 2 * k_B * dt / gamma;
 
-	//#pragma omp parallel for
 	for (int id = 0; id < n; id++) {
 		int i = 3*id;
 		int j = i+1;

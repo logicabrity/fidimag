@@ -6,7 +6,6 @@ void compute_uniaxial_anis(double *m, double *field, double *energy, double *Ms_
 	
 	int n = nx * ny * nz;
 
-    #pragma omp parallel for
 	for (int i = 0; i < n; i++) {
 		int j = 3 * i;
 

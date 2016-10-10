@@ -66,7 +66,6 @@ void dmi_field_bulk(double *spin, double *field,
                              0,  0,  1
                              };
 
-	#pragma omp parallel for shared(dmivector)
 	for (int i = 0; i < nxyz; i++) {
 
 		int id = 0;
@@ -171,7 +170,6 @@ void dmi_field_interfacial_atomistic(double *spin, double *field, double *energy
      * We assume a constant DMI vector magnitude
      */
     
-  	#pragma omp parallel for
 	for (int i = 0; i < n; i++) {
         
 		int idn = 6 * i; // index for the NNs

@@ -54,12 +54,10 @@
 void compute_stt_field_c(double *spin, double *field, double *jx, double *jy, double *jz,
 		double dx, double dy, double dz, int *ngbs, int n) {
 
-    //#pragma omp parallel for
 	for (int i = 0; i < 3 * n; i++) {
 		field[i] = 0;
 	}
     
-    #pragma omp parallel for
     /* Iterate through every lattice site */
     for (int i = 0; i < n; i++){
 
@@ -162,7 +160,6 @@ void compute_stt_field_c(double *spin, double *field, double *jx, double *jy, do
 void llg_stt_rhs(double *dm_dt, double *m, double *h, double *h_stt,
 		double *alpha, double beta, double u0, double gamma, int n) {
 
-	#pragma omp parallel for
 	for (int index = 0; index < n; index++) {
 	    int i = 3 * index;
 	    int j = 3 * index + 1;
@@ -223,7 +220,6 @@ void llg_stt_rhs(double *dm_dt, double *m, double *h, double *h_stt,
 void llg_stt_cpp(double *dm_dt, double *m, double *h, double *p,
 		double *alpha, int *pins, double *a_J, double beta, double gamma, int n) {
 
-	#pragma omp parallel for
 	for (int index = 0; index < n; index++) {
 	    int i = 3 * index;
 	    int j = 3 * index + 1;
