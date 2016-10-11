@@ -161,12 +161,16 @@ fft_demag_plan *create_plan(void) {
 	return plan;
 }
 
-void init_plan(fft_demag_plan *plan, double dx, double dy,
+int init_plan(fft_demag_plan *plan, double dx, double dy,
 		double dz, int nx, int ny, int nz) {
 
 	//plan->mu_s = mu_s;
 
-	fftw_init_threads();
+	int init_threads;
+        init_threads = fftw_init_threads();
+        int threads;
+        threads = omp_get_max_threads();
+        printf("FFTW Threads %d", threads);
 	fftw_plan_with_nthreads(omp_get_max_threads());
 
 	plan->dx = dx;
@@ -214,7 +218,8 @@ void init_plan(fft_demag_plan *plan, double dx, double dy,
 	plan->Hx = (fftw_complex *) fftw_malloc(size2);
 	plan->Hy = (fftw_complex *) fftw_malloc(size2);
 	plan->Hz = (fftw_complex *) fftw_malloc(size2);
-
+	
+	return init_threads;
 }
 
 
