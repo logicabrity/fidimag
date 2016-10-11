@@ -326,13 +326,19 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 	fftw_complex *Hz = plan->Hz;
 
 	//print_c("Mx", Mx, plan->total_length);
-
+#pragma omp parallel for schedule(dynamic,32)
 	for (i = 0; i < plan->total_length; i++) {
 		Hx[i] = Nxx[i] * Mx[i] + Nxy[i] * My[i] + Nxz[i] * Mz[i];
-		Hy[i] = Nxy[i] * Mx[i] + Nyy[i] * My[i] + Nyz[i] * Mz[i];
-		Hz[i] = Nxz[i] * Mx[i] + Nyz[i] * My[i] + Nzz[i] * Mz[i];
 	}
-
+	
+#pragma omp parallel for schedule(dynamic,32)
+	for (i = 0; i < plan->total_length; i++) {	
+		Hy[i] = Nxy[i] * Mx[i] + Nyy[i] * My[i] + Nyz[i] * Mz[i];
+	}
+#pragma omp parallel for schedule(dynamic,32)
+	for (i = 0; i < plan->total_length; i++) {
+		Hz[i] = Nxz[i] * Mx[i] + Nyz[i] * My[i] + Nzz[i] * Mz[i];
+    }
 	//print_c("Hx", Hx, plan->total_length);
 
 	fftw_execute_dft_c2r(plan->h_plan, plan->Hx, plan->hx);
@@ -343,7 +349,8 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 	//print_r("hz", plan->hz, plan->total_length);
 
 	double scale = -1.0  / plan->total_length;
-
+	
+#pragma omp parallel for private(j, i, id1, id2)
 	for (k = 0; k < nz; k++) {
 		for (j = 0; j < ny; j++) {
 			for (i = 0; i < nx; i++) {

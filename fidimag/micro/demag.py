@@ -40,7 +40,7 @@ class Demag(object):
 
             self.demag = clib.FFTDemag(self.dx, self.dy, self.dz,
                                        self.nx, self.ny, self.nz, tensor_type='2d_pbc')
-
+            print(self.demag)
             nxyz = self.nx*self.ny*self.nz
             tensors = np.zeros(6*nxyz, dtype=np.float)
 
