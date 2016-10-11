@@ -67,9 +67,9 @@ typedef struct {
 
 fft_demag_plan *create_plan(void);
 void finalize_plan(fft_demag_plan *plan);
-void init_plan(fft_demag_plan *plan, double dx, double dy,
+int init_plan(fft_demag_plan *plan, double dx, double dy,
 		double dz, int nx, int ny, int nz);
-void compute_dipolar_tensors(fft_demag_plan *plan); 
+void compute_dipolar_tensors(fft_demag_plan *plan);
 void compute_demag_tensors(fft_demag_plan *plan);
 void create_fftw_plan(fft_demag_plan *plan);
 
