@@ -54,9 +54,8 @@ void compute_dipolar_tensors(fft_demag_plan *plan) {
 	int lenx = plan->lenx;
 	int leny = plan->leny;
 	int lenz = plan->lenz;
-    int lenxy = lenx * leny;
+	int lenxy = lenx * leny;
 
-	
 	for (k = 0; k < lenz; k++) {
 		for (j = 0; j < leny; j++) {
 			for (i = 0; i < lenx; i++) {
@@ -176,13 +175,14 @@ void init_plan(fft_demag_plan *plan, double dx, double dy,
 	plan->nx = nx;
 	plan->ny = ny;
 	plan->nz = nz;
-
+	plan->nxy = nx*ny;
+        plan->nxyz = nx*ny*nz;
 	plan->lenx = 2 * nx - 1;
 	plan->leny = 2 * ny - 1;
 	plan->lenz = 2 * nz - 1;
-
+        plan->lenxy = plan->lenx*plan->leny;
 	plan->total_length = plan->lenx * plan->leny * plan->lenz;
-
+	plan->scale = -1.0  / plan->total_length;
 	int size1 = plan->total_length * sizeof(double);
 	int size2 = plan->total_length * sizeof(fftw_complex);
 
@@ -217,7 +217,6 @@ void init_plan(fft_demag_plan *plan, double dx, double dy,
 
 }
 
-
 void create_fftw_plan(fft_demag_plan *plan) {
 
 	
@@ -226,7 +225,7 @@ void create_fftw_plan(fft_demag_plan *plan) {
 			FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
 
 	plan->m_plan = fftw_plan_dft_r2c_3d(plan->lenz, plan->leny, plan->lenx,
-			plan->mx, plan->Mx, FFTW_MEASURE);
+			plan->mx, plan->Mx, FFTW_MEASURE | FFTW_DESTROY_INPUT);
 
 	plan->h_plan = fftw_plan_dft_c2r_3d(plan->lenz, plan->leny, plan->lenx,
 			plan->Hx, plan->hx, FFTW_MEASURE | FFTW_DESTROY_INPUT);
@@ -272,11 +271,11 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 	int nx = plan->nx;
 	int ny = plan->ny;
 	int nz = plan->nz;
-	int nxy = nx * ny;
+	int nxy = plan->nxy;
 
 	int lenx = plan->lenx;
 	int leny = plan->leny;
-	int lenxy = lenx * leny;
+	int lenxy = plan->lenxy;
 
 	for (i = 0; i < plan->total_length; i++) {
 		plan->mx[i] = 0;
@@ -337,7 +336,6 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 	//print_r("hy", plan->hy, plan->total_length);
 	//print_r("hz", plan->hz, plan->total_length);
 
-	double scale = -1.0  / plan->total_length;
 
 	for (k = 0; k < nz; k++) {
 		for (j = 0; j < ny; j++) {
@@ -345,9 +343,9 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 				id1 = k * nxy + j * nx + i;
 
 				id2 = (k + nz - 1) * lenxy + (j + ny - 1) * lenx + (i + nx - 1);
-				field[3*id1] = plan->hx[id2] * scale;
-				field[3*id1+1]  = plan->hy[id2] * scale;
-				field[3*id1+2]  = plan->hz[id2] * scale;
+				field[3*id1] = plan->hx[id2] * plan->scale;
+				field[3*id1+1]  = plan->hy[id2] * plan->scale;
+				field[3*id1+2]  = plan->hz[id2] * plan->scale;
 			}
 		}
 	}

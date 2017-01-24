@@ -18,18 +18,11 @@ enum Type_Nij {
 //used for demag
 
 typedef struct {
-	int nx;
-	int ny;
-	int nz;
-	double dx;
-	double dy;
-	double dz;
-	int lenx;
-	int leny;
-	int lenz;
-
+	int nx, ny, nz, nxy, nxyz;
+	double dx, dy, dz;
+	int lenx, leny, lenz, lenxy, lenxyz;
 	int total_length;
-
+        double scale;
 	double *tensor_xx;
 	double *tensor_yy;
 	double *tensor_zz;
