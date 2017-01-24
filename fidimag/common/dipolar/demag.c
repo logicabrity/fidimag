@@ -54,7 +54,7 @@ void compute_dipolar_tensors(fft_demag_plan *plan) {
 	int lenx = plan->lenx;
 	int leny = plan->leny;
 	int lenz = plan->lenz;
-	int lenxy = lenx * leny;
+	int lenxy = plan->lenxy;
 
 	for (k = 0; k < lenz; k++) {
 		for (j = 0; j < leny; j++) {
@@ -225,10 +225,10 @@ void create_fftw_plan(fft_demag_plan *plan) {
 			FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
 
 	plan->m_plan = fftw_plan_dft_r2c_3d(plan->lenz, plan->leny, plan->lenx,
-			plan->mx, plan->Mx, FFTW_MEASURE | FFTW_DESTROY_INPUT);
+			plan->mx, plan->Mx, FFTW_EXHAUSTIVE | FFTW_DESTROY_INPUT);
 
 	plan->h_plan = fftw_plan_dft_c2r_3d(plan->lenz, plan->leny, plan->lenx,
-			plan->Hx, plan->hx, FFTW_MEASURE | FFTW_DESTROY_INPUT);
+			plan->Hx, plan->hx, FFTW_EXHAUSTIVE | FFTW_DESTROY_INPUT);
 
 	for (int i = 0; i < plan->total_length; i++) {
 		plan->Nxx[i] = 0;
