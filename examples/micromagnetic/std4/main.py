@@ -76,7 +76,7 @@ def apply_field1(mesh):
 
     ts = np.linspace(0, 1e-9, 201)
     for t in ts:
-        sim.run_until(t)
+        sim.driver.run_until(t)
         print('sim t=%g' % t)
 
 
