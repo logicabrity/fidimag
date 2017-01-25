@@ -84,19 +84,14 @@ typedef struct {
 	int lenx, leny, lenz, lenxy, lenxyz;
 	int total_length;
  	double scale;
-	double *sxx;
-	double *syy;
-	double *szz;
-	double *sxy;
-	double *sxz;
-	double *syz;
+	double *sx;
+	double *sy;
+	double *sz;
 
-	fftw_complex *Sxx;
-	fftw_complex *Syy;
-	fftw_complex *Szz;
-	fftw_complex *Sxy;
-	fftw_complex *Sxz;
-	fftw_complex *Syz;
+	fftw_complex *Sx;
+	fftw_complex *Sy;
+	fftw_complex *Sz;
+
 
 	fftw_complex *Mx;
 	fftw_complex *My;
@@ -110,8 +105,8 @@ typedef struct {
 
 	//we need three plans
 	fftw_plan tensor_plan;
-	fftw_plan m_plan;
-	fftw_plan phi_plan;
+	fftw_plan r2c_plan;
+	fftw_plan c2r_plan;
 
 } fft_demag_plan_scalar;
 
@@ -172,3 +167,8 @@ void run_step1(ode_solver *s, double *m, double *h, double *m_pred, double *T,
 		double *alpha, double *mu_s_inv, int *pins);
 void run_step2(ode_solver *s, double *m_pred, double *h, double *m, double *T,
 		double *alpha, double *mu_s_inv, int *pins);
+
+
+double CalcSx(double x, double y, double z, double dx, double dy, double dz, double r);
+double CalcSy(double x, double y, double z, double dx, double dy, double dz, double r);
+double CalcSz(double x, double y, double z, double dx, double dy, double dz, double r);

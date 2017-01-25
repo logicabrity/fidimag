@@ -175,14 +175,13 @@ void init_plan(fft_demag_plan *plan, double dx, double dy,
 	plan->nx = nx;
 	plan->ny = ny;
 	plan->nz = nz;
-	plan->nxy = nx*ny;
-        plan->nxyz = nx*ny*nz;
+
 	plan->lenx = 2 * nx - 1;
 	plan->leny = 2 * ny - 1;
 	plan->lenz = 2 * nz - 1;
-        plan->lenxy = plan->lenx*plan->leny;
+
 	plan->total_length = plan->lenx * plan->leny * plan->lenz;
-	plan->scale = -1.0  / plan->total_length;
+
 	int size1 = plan->total_length * sizeof(double);
 	int size2 = plan->total_length * sizeof(fftw_complex);
 
@@ -217,6 +216,7 @@ void init_plan(fft_demag_plan *plan, double dx, double dy,
 
 }
 
+
 void create_fftw_plan(fft_demag_plan *plan) {
 
 
@@ -230,7 +230,7 @@ void create_fftw_plan(fft_demag_plan *plan) {
 	plan->h_plan = fftw_plan_dft_c2r_3d(plan->lenz, plan->leny, plan->lenx,
 			plan->Hx, plan->hx, FFTW_EXHAUSTIVE | FFTW_DESTROY_INPUT);
 
-	for (int i = 0; i < plan->total_length; i++) {
+	for (int i = 0; i < plan->lenxyz; i++) {
 		plan->Nxx[i] = 0;
 		plan->Nyy[i] = 0;
 		plan->Nzz[i] = 0;
@@ -278,7 +278,7 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 	int lenxy = plan->lenxy;
 
   #pragma omp parallel for schedule(dynamic,16)
-	for (i = 0; i < plan->total_length; i++) {
+	for (i = 0; i < plan->lenxyz; i++) {
 		plan->mx[i] = 0;
 		plan->my[i] = 0;
 		plan->mz[i] = 0;
@@ -298,13 +298,13 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 		}
 	}
 
-	//print_r("plan->mx", plan->mx, plan->total_length);
+	//print_r("plan->mx", plan->mx, plan->lenxyz);
 
 	fftw_execute_dft_r2c(plan->m_plan, plan->mx, plan->Mx);
 	fftw_execute_dft_r2c(plan->m_plan, plan->my, plan->My);
 	fftw_execute_dft_r2c(plan->m_plan, plan->mz, plan->Mz);
 
-	//print_c("plan->Mx", plan->Mx, plan->total_length);
+	//print_c("plan->Mx", plan->Mx, plan->lenxyz);
 
 	fftw_complex *Nxx = plan->Nxx;
 	fftw_complex *Nyy = plan->Nyy;
@@ -320,22 +320,22 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 	fftw_complex *Hy = plan->Hy;
 	fftw_complex *Hz = plan->Hz;
 
-	//print_c("Mx", Mx, plan->total_length);
+	//print_c("Mx", Mx, plan->lenxyz);
   #pragma omp parallel for schedule(dynamic,16)
-	for (i = 0; i < plan->total_length; i++) {
+	for (i = 0; i < plan->lenxyz; i++) {
 		Hx[i] = Nxx[i] * Mx[i] + Nxy[i] * My[i] + Nxz[i] * Mz[i];
 		Hy[i] = Nxy[i] * Mx[i] + Nyy[i] * My[i] + Nyz[i] * Mz[i];
 		Hz[i] = Nxz[i] * Mx[i] + Nyz[i] * My[i] + Nzz[i] * Mz[i];
 	}
 
-	//print_c("Hx", Hx, plan->total_length);
+	//print_c("Hx", Hx, plan->lenxyz);
 
 	fftw_execute_dft_c2r(plan->h_plan, plan->Hx, plan->hx);
 	fftw_execute_dft_c2r(plan->h_plan, plan->Hy, plan->hy);
 	fftw_execute_dft_c2r(plan->h_plan, plan->Hz, plan->hz);
-	//print_r("hx", plan->hx, plan->total_length);
-	//print_r("hy", plan->hy, plan->total_length);
-	//print_r("hz", plan->hz, plan->total_length);
+	//print_r("hx", plan->hx, plan->lenxyz);
+	//print_r("hy", plan->hy, plan->lenxyz);
+	//print_r("hz", plan->hz, plan->lenxyz);
 
   #pragma omp parallel for private(j, i, id1, id2) schedule(dynamic,16)
 	for (k = 0; k < nz; k++) {
@@ -464,4 +464,290 @@ void finalize_plan(fft_demag_plan *plan) {
 	fftw_cleanup_threads();
 
 	free(plan);
+}
+
+
+fft_demag_plan_scalar *create_plan_scalar(void) {
+	fft_demag_plan_scalar *plan = (fft_demag_plan_scalar*) malloc(sizeof(fft_demag_plan_scalar));
+	return plan;
+}
+
+
+void init_plan_scalar(fft_demag_plan_scalar *plan, double dx, double dy,
+		double dz, int nx, int ny, int nz) {
+
+	//plan->mu_s = mu_s;
+
+	fftw_init_threads();
+	fftw_plan_with_nthreads(omp_get_max_threads());
+
+	plan->dx = dx;
+	plan->dy = dy;
+	plan->dz = dz;
+
+	plan->nx = nx;
+	plan->ny = ny;
+	plan->nz = nz;
+	plan->nxy = nx*ny;
+    plan->nxyz = nx*ny*nz;
+	plan->lenx = 2 * nx - 1;
+	plan->leny = 2 * ny - 1;
+	plan->lenz = 2 * nz - 1;
+    plan->lenxy = plan->lenx*plan->leny;
+	plan->lenxyz = plan->lenx * plan->leny * plan->lenz;
+	plan->scale = -1.0  / plan->lenxyz;
+	int size1 = plan->lenxyz * sizeof(double);
+	int size2 = plan->lenxyz * sizeof(fftw_complex);
+
+	plan->sx = (double *) fftw_malloc(size1);
+	plan->sy = (double *) fftw_malloc(size1);
+	plan->sz = (double *) fftw_malloc(size1);
+	plan->mx = (double *) fftw_malloc(size1);
+	plan->my = (double *) fftw_malloc(size1);
+	plan->mz = (double *) fftw_malloc(size1);
+
+	plan->phi = (double *) fftw_malloc(size1);
+    
+	plan->Sx = (fftw_complex *) fftw_malloc(size2);
+	plan->Sy = (fftw_complex *) fftw_malloc(size2);
+	plan->Sz = (fftw_complex *) fftw_malloc(size2);
+	plan->Mx = (fftw_complex *) fftw_malloc(size2);
+	plan->My = (fftw_complex *) fftw_malloc(size2);
+	plan->Mz = (fftw_complex *) fftw_malloc(size2);
+	plan->Phi = (fftw_complex *) fftw_malloc(size2);
+
+}
+
+void create_fftw_plan_scalar(fft_demag_plan_scalar *plan) {
+
+    
+	plan->tensor_plan = fftw_plan_dft_r2c_3d(plan->lenz, plan->leny,
+			plan->lenx, plan->sx, plan->Sx,
+			FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+    
+	plan->r2c_plan = fftw_plan_dft_r2c_3d(plan->lenz, plan->leny, plan->lenx,
+			plan->mx, plan->Mx, FFTW_EXHAUSTIVE | FFTW_DESTROY_INPUT);
+
+	plan->c2r_plan = fftw_plan_dft_c2r_3d(plan->lenz, plan->leny, plan->lenx,
+			plan->Phi, plan->phi, FFTW_EXHAUSTIVE | FFTW_DESTROY_INPUT);
+
+	for (int i = 0; i < plan->lenxyz; i++) {
+		plan->Sx[i] = 0;
+		plan->Sy[i] = 0;
+		plan->Sz[i] = 0;
+		plan->mx[i] = 0;
+		plan->my[i] = 0;
+		plan->mz[i] = 0;
+
+		plan->phi[i] = 0;
+	}
+
+
+	fftw_execute_dft_r2c(plan->tensor_plan, plan->sx, plan->Sx);
+	fftw_execute_dft_r2c(plan->tensor_plan, plan->sy, plan->Sy);
+	fftw_execute_dft_r2c(plan->tensor_plan, plan->sz, plan->Sz);
+
+	fftw_destroy_plan(plan->tensor_plan);
+
+}
+
+
+
+
+
+//The computed results doesn't consider the coefficient of \frac{\mu_0}{4 \pi}, the
+//reason is in future we can use the following code directly for continuum case
+void compute_fields_scalar(fft_demag_plan_scalar *plan, double *spin, double *mu_s, double *field) {
+
+	int i, j, k, id1, id2;
+
+	int nx = plan->nx;
+	int ny = plan->ny;
+	int nz = plan->nz;
+	int nxy = plan->nxy;
+	int lenx = plan->lenx;
+	int leny = plan->leny;
+	int lenxy = plan->lenxy;
+
+  #pragma omp parallel for schedule(dynamic,16)
+	for (i = 0; i < plan->lenxyz; i++) {
+		plan->mx[i] = 0;
+		plan->my[i] = 0;
+		plan->mz[i] = 0;
+	}
+
+  #pragma omp parallel for private(j, i, id1, id2) schedule(dynamic,16)
+	for (k = 0; k < nz; k++) {
+		for (j = 0; j < ny; j++) {
+			for (i = 0; i < nx; i++) {
+				id1 = k * nxy + j * nx + i;
+				id2 = k * lenxy + j * lenx + i;
+
+				plan->mx[id2] = spin[3*id1]*mu_s[id1];
+				plan->my[id2] = spin[3*id1+1]*mu_s[id1];
+				plan->mz[id2] = spin[3*id1+2]*mu_s[id1];
+			}
+		}
+	}
+
+
+	fftw_execute_dft_r2c(plan->r2c_plan, plan->mx, plan->Mx);
+	fftw_execute_dft_r2c(plan->r2c_plan, plan->my, plan->My);
+	fftw_execute_dft_r2c(plan->r2c_plan, plan->mz, plan->Mz);
+
+
+    // STEP - take the convolution of Phi and S
+
+    #pragma omp parallel for schedule(dynamic,16)
+	for (i = 0; i < plan->lenxyz; i++) {
+		plan->Phi[i] = plan->Sx[i] * plan->Mx[i] + plan->Sy[i] * plan->My[i] + plan->Sz[i] * plan->Mz[i];
+	}
+
+
+	fftw_execute_dft_c2r(plan->c2r_plan, plan->Phi, plan->phi);
+    // for (int i = 0; i < plan->n; i++) { 
+    //     id = k*plan->nxy + j*plan->nx + k;
+    //     field[3*id]   = phi[i]
+    //     field[3*id+1] =
+    //     field[3*id+2] =
+    // }
+    // STEP - Calcualte the gradient of plan->phi to get the field.
+
+    //    #pragma omp parallel for private(j, i, id1, id2) schedule(dynamic,16)
+	// for (k = 0; k < nz; k++) {
+	// 	for (j = 0; j < ny; j++) {
+	// 		for (i = 0; i < nx; i++) {
+	// 			id1 = k * nxy + j * nx + i;
+
+	// 			id2 = (k + nz - 1) * lenxy + (j + ny - 1) * lenx + (i + nx - 1);
+	// 			field[3*id1] = plan->hx[id2] * plan->scale;
+	// 			field[3*id1+1]  = plan->hy[id2] * plan->scale;
+	// 			field[3*id1+2]  = plan->hz[id2] * plan->scale;
+	// 		}
+	// 	}
+	// }
+
+}
+
+
+double compute_demag_energy_scalar(fft_demag_plan_scalar *plan, double *spin, double *mu_s, double *field) {
+
+	int i,j;
+
+	int nxyz = plan->nx * plan->ny * plan->nz;
+
+	double energy = 0;
+
+	for (i = 0; i < nxyz; i++) {
+		j = 3*i;
+		energy += mu_s[i]*(spin[j]*field[j]+spin[j+1]*field[j+1]+spin[j+2]*field[j+2]);
+	}
+
+	energy = -energy / 2.0;
+
+	return energy;
+
+}
+
+void finalize_plan_scalar(fft_demag_plan_scalar *plan) {
+
+	fftw_destroy_plan(plan->r2c_plan);
+	fftw_destroy_plan(plan->c2r_plan);
+    fftw_destroy_plan(plan->tensor_plan);
+	fftw_free(plan->sx);
+	fftw_free(plan->sy);
+	fftw_free(plan->sz);
+	fftw_free(plan->Sx);
+	fftw_free(plan->Sy);
+	fftw_free(plan->Sz);
+
+	fftw_free(plan->Mx);
+	fftw_free(plan->My);
+	fftw_free(plan->Mz);
+
+	fftw_free(plan->phi);
+	fftw_free(plan->Phi);
+	fftw_free(plan->mx);
+	fftw_free(plan->my);
+	fftw_free(plan->mz);
+	fftw_cleanup_threads();
+
+	free(plan);
+}
+
+
+
+void compute_demag_tensors_scalar(fft_demag_plan_scalar *plan) {
+	int i, j, k, id;
+	double x, y, z, r;
+	int nx = plan->nx;
+	int ny = plan->ny;
+	int nz = plan->nz;
+	int lenx = plan->lenx;
+	int leny = plan->leny;
+	int lenz = plan->lenz;
+	int lenxy = plan->lenxy;
+	double dx = plan->dx;
+	double dy = plan->dy;
+	double dz = plan->dz;
+	double length = pow(dx*dy*dz, 1/3.0);
+	double asymptotic_radius_sq = pow(26.0*length,2.0);
+	for (k = 0; k < lenz; k++) {
+		for (j = 0; j < leny; j++) {
+			for (i = 0; i < lenx; i++) {
+ 				id = k * lenxy + j * lenx + i;
+				x = (i - nx + 1) * dx;
+				y = (j - ny + 1) * dy;
+				z = (k - nz + 1) * dz;
+                r = x*x + y*y + z*z;
+				//printf("%g %g %g %g %g %g\n",x,y,z,dx,dy,dz);
+				plan->sx[id] = CalcSx(x, y, z, dx, dy, dz, r);
+				plan->sy[id] = CalcSy(x, y, z, dx, dy, dz, r);
+				plan->sz[id] = CalcSz(x, y, z, dx, dy, dz, r);
+					
+				
+			}
+		}
+	}
+}
+
+inline double F(double x, double y, double z, double r) {
+    double result = -x; 
+    if (z != 0) {
+    	result += atan2(x, z) - z*atan2(x*y, z*r);
+    }
+    if (y != 0) {
+    	result += y*(log(2.0) + log(x + r));
+    }
+    if (z != 0) {
+    	result += x*(log(2.0) + log(y + r));
+    }
+    return result;
+}
+
+double CalcSz(double x, double y, double z, double dx, double dy, double dz, double r) {
+	double result = 0;
+	double xm = x - dx/2;
+	double ym = y - dy/2;
+	double zm = z - dz/2;
+	double xp = x + dx/2;
+	double yp = y + dy/2;
+	double zp = z + dz/2;
+	result += 1*F(xm, ym, zm, r);
+	result += -1*F(xm, ym, zp, r);
+	result += -1*F(xm, yp, zm, r);
+	result += 1*F(xm, yp, zp, r);
+	result += -1*F(xp, ym, zm, r);
+	result += 1*F(xp, ym, zp, r);
+	result += 1*F(xp, yp, zm, r);
+	result += -1*F(xp, yp, zp, r);
+    return result;
+}
+
+double CalcSx(double x, double y, double z, double dx, double dy, double dz, double r) {
+	return CalcSz(y, z, x, dy, dz, dx, r);
+}
+
+double CalcSy(double x, double y, double z, double dx, double dy, double dz, double r) {
+	return CalcSz(z, x, y, dz, dx, dy, r);
 }
