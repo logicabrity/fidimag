@@ -219,7 +219,7 @@ void init_plan(fft_demag_plan *plan, double dx, double dy,
 
 void create_fftw_plan(fft_demag_plan *plan) {
 
-	
+
 	plan->tensor_plan = fftw_plan_dft_r2c_3d(plan->lenz, plan->leny,
 			plan->lenx, plan->tensor_xx, plan->Nxx,
 			FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
@@ -277,13 +277,14 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 	int leny = plan->leny;
 	int lenxy = plan->lenxy;
 
+  #pragma omp parallel for schedule(dynamic,16)
 	for (i = 0; i < plan->total_length; i++) {
 		plan->mx[i] = 0;
 		plan->my[i] = 0;
 		plan->mz[i] = 0;
 	}
 
-
+  #pragma omp parallel for private(j, i, id1, id2) schedule(dynamic,16)
 	for (k = 0; k < nz; k++) {
 		for (j = 0; j < ny; j++) {
 			for (i = 0; i < nx; i++) {
@@ -320,7 +321,7 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 	fftw_complex *Hz = plan->Hz;
 
 	//print_c("Mx", Mx, plan->total_length);
-
+  #pragma omp parallel for schedule(dynamic,16)
 	for (i = 0; i < plan->total_length; i++) {
 		Hx[i] = Nxx[i] * Mx[i] + Nxy[i] * My[i] + Nxz[i] * Mz[i];
 		Hy[i] = Nxy[i] * Mx[i] + Nyy[i] * My[i] + Nyz[i] * Mz[i];
@@ -336,7 +337,7 @@ void compute_fields(fft_demag_plan *plan, double *spin, double *mu_s, double *fi
 	//print_r("hy", plan->hy, plan->total_length);
 	//print_r("hz", plan->hz, plan->total_length);
 
-
+  #pragma omp parallel for private(j, i, id1, id2) schedule(dynamic,16)
 	for (k = 0; k < nz; k++) {
 		for (j = 0; j < ny; j++) {
 			for (i = 0; i < nx; i++) {
@@ -373,7 +374,7 @@ void exact_compute(fft_demag_plan *plan, double *spin,  double *mu_s, double *fi
 	double *Nxz = plan->tensor_xz;
 	double *Nyz = plan->tensor_yz;
 
-	
+
         for (k = 0; k < nz; k++) {
 		for (j = 0; j < ny; j++) {
 			for (i = 0; i < nx; i++) {
@@ -464,4 +465,3 @@ void finalize_plan(fft_demag_plan *plan) {
 
 	free(plan);
 }
-
