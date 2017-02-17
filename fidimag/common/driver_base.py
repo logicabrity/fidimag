@@ -4,7 +4,9 @@ from __future__ import print_function
 import os
 import numpy as np
 import fidimag.common.helper as helper
+from aeon import Timer
 
+code_timer = Timer()
 
 class DriverBase(object):
     """
@@ -12,7 +14,8 @@ class DriverBase(object):
     """
 
     def __init__(self):
-        pass
+        self.code_timer = code_timer
+        # pass
 
     # -------------------------------------------------------------------------
 
@@ -92,6 +95,7 @@ class DriverBase(object):
         """
         self.integrator.set_options(rtol, atol)
 
+    @code_timer.method
     def compute_effective_field(self, t):
         """
         Compute the effective field from the simulation interactions,
@@ -136,16 +140,15 @@ class DriverBase(object):
             else:
                 raise ValueError("t must be >= sim.t")
 
-        ode = self.integrator
-
         self.spin_last[:] = self.spin[:]
 
-        flag = ode.run_until(t)
+        with code_timer('ODE_run'):
+            flag = self.integrator.run_until(t)
 
         if flag < 0:
             raise Exception("Run cython run_until failed!!!")
 
-        self.spin[:] = ode.y[:]
+        self.spin[:] = self.integrator.y[:]
 
         self.t = t
         self.step += 1

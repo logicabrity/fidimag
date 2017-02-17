@@ -56,16 +56,17 @@ class LLG(MicroDriver):
 
         self.compute_effective_field(t)
 
-        clib.compute_llg_rhs(ydot,
-                             self.spin,
-                             self.field,
-                             self._alpha,
-                             self._pins,
-                             self.gamma,
-                             self.mesh.n,
-                             self.do_precession,
-                             self.default_c
-                             )
+        with self.code_timer('compute_LLG'):
+            clib.compute_llg_rhs(ydot,
+                                 self.spin,
+                                 self.field,
+                                 self._alpha,
+                                 self._pins,
+                                 self.gamma,
+                                 self.mesh.n,
+                                 self.do_precession,
+                                 self.default_c
+                                 )
 
         # ydot[:] = self.dm_dt[:]
 

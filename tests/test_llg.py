@@ -143,6 +143,8 @@ def test_sim_single_spin(do_plot=False):
     print(("Max Deviation = {0}".format(
         np.max(np.abs(mz - a_mz)))))
 
+    print(sim.driver.print_report())
+
     assert np.max(np.abs(mz - a_mz)) < 5e-7
 
 
