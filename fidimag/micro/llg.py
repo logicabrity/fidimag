@@ -40,7 +40,7 @@ class LLG(MicroDriver):
         super(LLG, self).__init__(mesh, spin, Ms, field,
                                   pins, interactions, name,
                                   data_saver,
-                                  integrator='sundials',
+                                  integrator=integrator,
                                   use_jac=False
                                   )
 
@@ -95,16 +95,17 @@ class LLG(MicroDriver):
         # From the micro_driver class:
         self.compute_effective_field(t)
 
-        clib.compute_llg_rhs(self.dm_dt,
-                             self.spin,
-                             self.field,
-                             self.alpha,
-                             self._pins,
-                             self.gamma,
-                             self.n,
-                             self.do_precession,
-                             self.default_c
-                             )
+        with self.code_timer('compute_LLG'):
+            clib.compute_llg_rhs(self.dm_dt,
+                                 self.spin,
+                                 self.field,
+                                 self.alpha,
+                                 self._pins,
+                                 self.gamma,
+                                 self.n,
+                                 self.do_precession,
+                                 self.default_c
+                                 )
         return self.dm_dt
 
 if __name__ == '__main__':

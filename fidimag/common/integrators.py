@@ -58,12 +58,12 @@ class ScipyIntegrator(BaseIntegrator):
         self.internal_timesteps.append(t)
         return 0  # all ok signal for scipy
 
-    def set_tols(self, rtol, atol):
+    def set_options(self, rtol, atol):
         self.rtol = rtol
         self.atol = atol
 
     def _create_integrator(self):
-        self.ode = ode(self.rhs).set_integrator("dopri5", rtol=self.rtol, atol=self.atol)
+        self.ode = ode(self.rhs).set_integrator("dopri5", rtol=self.rtol, atol=self.atol, nsteps=10000)
         self.ode.set_solout(self.solout)  # needs to be before set_initial_value for scipy < 0.17.0
         self.ode.set_initial_value(self.y, self.t)
         self.integrator_created = True
@@ -79,6 +79,9 @@ class ScipyIntegrator(BaseIntegrator):
         self.y[:] = r
         self.t = t
         return 0
+
+    def reset(self, spin, t):
+        self._create_integrator()
 
 
 def euler_step(t, y, h, f):

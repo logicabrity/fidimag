@@ -26,7 +26,10 @@ def init_m(pos):
 
 def relax_system(mesh):
 
-    sim = Sim(mesh, name='relax')
+    sim = Sim(mesh, name='relax', 
+              # integrator='dopri5'
+              integrator='sundials_openmp'
+              )
 
     sim.driver.set_tols(rtol=1e-10, atol=1e-10)
     sim.driver.alpha = 0.5
@@ -44,8 +47,8 @@ def relax_system(mesh):
     demag = Demag()
     sim.add(demag)
 
-    sim.driver.run_until(2e-9)
-    print(sim.driver.timer.report())
+    sim.driver.run_until(1e-9)
+    print(sim.driver.code_timer.report())
 
     # sim.relax(dt=1e-13, stopping_dmdt=0.01, max_steps=5000,
     #           save_m_steps=100, save_vtk_steps=50)
@@ -132,7 +135,7 @@ def deal_plot():
     
 if __name__ == '__main__':
 
-    mesh = CuboidMesh(nx=200, ny=50, nz=1, dx=2.5, dy=2.5, dz=3, unit_length=1e-9)
+    mesh = CuboidMesh(nx=400, ny=100, nz=1, dx=2.5, dy=2.5, dz=3, unit_length=1e-9)
 
     relax_system(mesh)
 

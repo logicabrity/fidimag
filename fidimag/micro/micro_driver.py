@@ -4,7 +4,7 @@ from __future__ import print_function
 from fidimag.common.driver_base import DriverBase
 
 import numpy as np
-from fidimag.common.integrators import CvodeSolver, CvodeSolver_OpenMP, StepIntegrator
+from fidimag.common.integrators import ScipyIntegrator, CvodeSolver, CvodeSolver_OpenMP, StepIntegrator
 # from fidimag.common.fileio import DataSaver, DataReader
 from fidimag.common.vtk import VTK
 import time
@@ -94,6 +94,8 @@ class MicroDriver(DriverBase):
         elif integrator == "euler" or integrator == "rk4":
             self.integrator = CvodeSolver(self.spin, self.step_rhs,
                                           integrator)
+        elif integrator == "dopri5":
+            self.integrator = ScipyIntegrator(self.spin, self.step_rhs)
 
         elif integrator == "sundials_openmp" and use_jac:
             self.integrator = CvodeSolver_OpenMP(self.spin, self.sundials_rhs,
