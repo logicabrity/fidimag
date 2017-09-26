@@ -1,11 +1,12 @@
 import os
+import logging
 import pyvtk
+import sys
 from fidimag.common import CuboidMesh
 from fidimag.atomistic.hexagonal_mesh import HexagonalMesh
-import sys
 
-log = pyvtk.logging.getLogger(pyvtk.__name__)
-log.setLevel(pyvtk.logging.ERROR)
+log = logging.getLogger(pyvtk.__name__)
+log.setLevel(logging.ERROR)
 
 
 class VTK(object):
